@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
-
-from flask import request, session, make_response
+from flask import request, session, make_response, jsonify
 from flask_restful import Resource
-
+from sqlalchemy.exc import IntegrityError
 from config import app, db, api
 from models import User, Recipe
-
+import traceback
 class Signup(Resource):
     def post(self):
         json = request.get_json()
@@ -116,9 +115,10 @@ class RecipeIndex(Resource):
                 201
             )
             return resp
-        except:
+        except IntegrityError as e:
+            db.session.rollback()  
             resp = make_response(
-                {"message": "422 Unprocessable Entity"},
+                {"message": "Invalid Recipe"},
                 422
             )
             return resp
